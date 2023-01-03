@@ -100,13 +100,23 @@ def handle_message(update, context):
     api_key_active = False
     return
   # If the chat command has been called, process the message as before
+  # Store the current message in the context.user_data dictionary
   testo = update.message.text.lower()
+  if 'conversation' not in context.user_data:
+      context.user_data['conversation'] = []
+  # Check if the user wants to reset the conversation
+  if testo == '/reset': # /reset command
+      context.user_data['conversation'] = []
+      update.message.reply_text("Conversation reset.")
+      return
+  context.user_data['conversation'].append(testo)
   try:
-    # Use the actual message text as the prompt in the OpenAI API call
+    # Use the conversation as the prompt in the OpenAI API call
     # Use the API key for the current user
     api_key = context.user_data['api_key']
     openai.api_key = api_key
-    response = openai.Completion.create(engine=engine_ai,prompt=(f'{testo}\n'),temperature=1,max_tokens=2048,top_p=1,frequency_penalty=0.0,)
+    prompt = "\n".join(context.user_data['conversation'])
+    response = openai.Completion.create(engine=engine_ai,prompt=prompt,temperature=1,max_tokens=2048,top_p=1,frequency_penalty=0.0,)
     # Send the response to the user
     response_def = response['choices'][0]['text']
     update.message.reply_text(response_def)
@@ -116,6 +126,8 @@ def handle_message(update, context):
     bot.send_message(chat_id=chat_log_id, text=message_log)
   except:
     update.message.reply_text("ERROR, check if you have insert correct API /set_api_key \nor started /chat command")
+
+
 
 # Set up the message handler
 updater = Updater(TELEGRAM_TOKEN)
@@ -144,4 +156,5 @@ ERRORS LOGS:
 
 
 """)
+
 updater.start_polling()
