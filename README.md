@@ -13,9 +13,9 @@ apt install python3 -y
 
 apt install pip -y
 
-apt install python-telegram-bot==13.3
+pip install python-telegram-bot==13.3
 
-apt install openai
+pip install openai
 
 apt install sysemctl
 
