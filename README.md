@@ -1,7 +1,10 @@
 # OmniscientGPT
-Telegram AI Chat Bot based with OpenAI
+### The first tool that bypass ChatGPT policy created on 01/2023
 
-Faster reply than normal ChatGPT, and bypass OpenAI policy
+- Telegram AI Chat Bot based with OpenAI
+
+- Faster reply than normal ChatGPT, and bypass OpenAI policy
+
 
 Commands
 -
